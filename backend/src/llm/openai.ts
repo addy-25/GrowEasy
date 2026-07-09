@@ -2,7 +2,10 @@ import OpenAI from "openai";
 import { systemPrompt } from "../services/prompt";
 import { CrmRecord } from "../types";
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: process.env.OPENAI_BASE_URL,   // route requests to AI Credits, not OpenAI
+});
 
 export async function callLlm(batch: Record<string, string>[]): Promise<CrmRecord[]> {
   const completion = await client.chat.completions.create({
