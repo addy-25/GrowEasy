@@ -1,3 +1,7 @@
+import { CrmRecord } from "../types";
+import { callLlm } from "../llm/openai";
+
+
 export async function extractAll(rows: Record<string,string>[]) {
   const BATCH = 20;
   const results: CrmRecord[] = [];
