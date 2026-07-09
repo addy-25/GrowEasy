@@ -4,7 +4,7 @@ import cors from "cors";
 import multer from "multer";
 import { parseCsv } from "./services/csv";
 import { extractAll } from "./services/extractor";
-import { CRM_STATUS, DATA_SOURCE } from "./types";
+import { sanitizeRecord } from "./services/sanitize";
 
 const app = express();
 app.use(cors());                        // let the frontend call this server
@@ -25,17 +25,8 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
     // 2. AI maps each row into our CRM shape (batched, with retry)
     const extracted = await extractAll(rows);
 
-    // 3. GUARDRAIL: don't trust the AI blindly. If it returned a status/source
-    //    that isn't in our allowed list, blank it out.
-    const cleaned = extracted.map((r) => ({
-      ...r,
-      crm_status: (CRM_STATUS as readonly string[]).includes(r.crm_status)
-        ? r.crm_status
-        : "",
-      data_source: (DATA_SOURCE as readonly string[]).includes(r.data_source)
-        ? r.data_source
-        : "",
-    }));
+        // 3. GUARDRAIL: enforce every hard rule in code — don't trust the AI blindly
+    const cleaned = extracted.map(sanitizeRecord);
 
     // 4. skip rule: a lead with neither email nor mobile is useless
     const skipped = cleaned.filter((r) => !r.email && !r.mobile_without_country_code);

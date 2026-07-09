@@ -16,8 +16,17 @@ RULES:
 - data_source must be one of: ${DATA_SOURCE.join(", ")}. If none matches
   confidently, leave "".
 - created_at must be parseable by JS new Date(). Convert any date format to ISO.
+  If the date is invalid or impossible (day > 31, month > 12, nonsense values),
+  output an empty string "". NEVER invent or guess a plausible-looking date
+  when the source value is broken.
 - If a row has multiple emails: use the first, append the rest into crm_note.
-- If a row has multiple phone numbers: use the first, append rest into crm_note.
+- created_at must be parseable by JS new Date(). Convert any date format to ISO.
+- If a row has multiple phone numbers: use the first, and you MUST actively
+  search the entire row for every additional number and include ALL of them
+  in crm_note. Never silently drop a number. Example:
+    Input phone field: "9876543210 / 9876543211"
+    Output: mobile_without_country_code = "9876543210",
+            crm_note includes "9876543211"
 - Put remarks, follow-up notes, extra info that fits no field into crm_note.
 - Never invent data. Unknown field => empty string "".
 - Keep every value single-line. Escape newlines as \\n.
