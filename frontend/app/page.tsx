@@ -20,14 +20,12 @@ export default function Home() {
     setStep("preview");
   }
 
-  // STEP 3 → 4: send the file to the backend, show loading, then results.
   async function handleConfirm() {
     if (!file) return;
     setStep("loading");
     setError(null);
 
     try {
-      // package the file the way the browser + multer expect
       const formData = new FormData();
       formData.append("file", file);
 
@@ -36,13 +34,15 @@ export default function Home() {
         body: formData,
       });
 
-      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? `Server responded with ${res.status}`);
+      }
 
       const data: ImportResult = await res.json();
       setResult(data);
       setStep("result");
     } catch (err) {
-      // on failure, go back to preview and show what went wrong
       setError(err instanceof Error ? err.message : "Something went wrong");
       setStep("preview");
     }
@@ -68,17 +68,18 @@ export default function Home() {
       </header>
 
       <div className="w-full max-w-5xl">
-        {/* STEP 1 — upload */}
         {step === "upload" && <UploadStep onFileParsed={handleFileParsed} />}
 
-        {/* STEP 2 + 3 — preview + confirm */}
         {step === "preview" && (
           <div className="animate-fade-in-up space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <p className="text-ink-mid">
                 Previewing <b>{rows.length}</b> rows from <b>{file?.name}</b>
                 {rows.length >= PREVIEW_LIMIT && (
-                  <span className="text-ink-faint"> (first {PREVIEW_LIMIT.toLocaleString()} shown — the full file is still imported)</span>
+                  <span className="text-ink-faint">
+                    {" "}
+                    (first {PREVIEW_LIMIT.toLocaleString()} shown — the full file is still imported)
+                  </span>
                 )}
               </p>
               <div className="flex gap-3">
@@ -99,25 +100,23 @@ export default function Home() {
             </div>
 
             {error && (
-              <p className="text-sm alert-error rounded-xl py-2 px-4">
-                {error}
-              </p>
+              <p className="text-sm alert-error rounded-xl py-2 px-4">{error}</p>
             )}
 
             <PreviewTable rows={rows} />
           </div>
         )}
 
-        {/* STEP loading */}
         {step === "loading" && (
           <div className="glass rounded-2xl p-16 text-center animate-fade-in-up">
             <div className="mx-auto mb-5 h-12 w-12 rounded-full border-4 border-line border-t-indigo-400 animate-spin" />
             <p className="text-lg font-medium">Processing with AI…</p>
-            <p className="text-sm text-ink-dim mt-1">Mapping your columns into CRM fields</p>
+            <p className="text-sm text-ink-dim mt-1">
+              Mapping your columns into CRM fields
+            </p>
           </div>
         )}
 
-        {/* STEP 4 — results */}
         {step === "result" && result && (
           <ResultView result={result} onReset={reset} />
         )}

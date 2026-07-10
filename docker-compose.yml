@@ -3,7 +3,7 @@ services:
     build: ./backend
     ports:
       - "4000:4000"
-    # the OpenAI/AI-Credits key lives in backend/.env (never in the image)
+    # API credentials live in backend/.env, never in the image
     env_file:
       - ./backend/.env
 

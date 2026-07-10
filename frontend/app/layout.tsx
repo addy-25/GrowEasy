@@ -18,9 +18,8 @@ export const metadata: Metadata = {
   description: "AI-powered CSV importer for CRM leads",
 };
 
-// Runs before paint: applies the saved theme so there's no flash of the
-// wrong theme on load. suppressHydrationWarning on <html> is needed because
-// this script may change the class before React hydrates.
+// Applies the saved theme before first paint to avoid a flash of the wrong
+// theme; suppressHydrationWarning covers the class change on <html>.
 const themeInitScript = `(function(){try{if(localStorage.getItem("theme")==="light")document.documentElement.classList.add("light");}catch(e){}})();`;
 
 export default function RootLayout({

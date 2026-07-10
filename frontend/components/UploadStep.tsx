@@ -13,36 +13,36 @@ export default function UploadStep({ onFileParsed }: Props) {
   const [localError, setLocalError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Shared logic: validate + parse, whether the file came from drag OR click.
   function handleFile(file: File | undefined) {
     if (!file) return;
 
+    // Dragged files often report an empty or wrong MIME type,
+    // so validate by extension instead.
     if (!file.name.toLowerCase().endsWith(".csv")) {
       setLocalError("Please upload a .csv file.");
       return;
     }
     setLocalError(null);
 
-    // Incremental parsing: `step` streams the file ROW BY ROW instead of
-    // loading it all into memory. We stop once we have enough rows for the
-    // preview — a 100MB CSV costs the same as a 1KB one here. The backend
-    // still receives the full original file on Confirm.
+    // Streams the file row by row and stops at the preview cap, so large
+    // files never block the UI. The full file is still sent on Confirm.
     const rows: Record<string, string>[] = [];
     Papa.parse<Record<string, string>>(file, {
       header: true,
       skipEmptyLines: true,
       step: (result, parser) => {
         rows.push(result.data);
-        if (rows.length >= PREVIEW_LIMIT) parser.abort(); // enough for preview
+        if (rows.length >= PREVIEW_LIMIT) parser.abort();
       },
-      complete: () => onFileParsed(file, rows), // fires after finish OR abort
+      complete: () => onFileParsed(file, rows),
       error: () => setLocalError("Could not read that file. Is it a valid CSV?"),
     });
   }
 
-  // --- native drag & drop ---
+  // preventDefault in dragover is required — without it the browser
+  // never fires the drop event.
   function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
-    e.preventDefault();        // ← CRITICAL: marks the box as a valid drop target
+    e.preventDefault();
     setIsDragActive(true);
   }
 
@@ -52,9 +52,9 @@ export default function UploadStep({ onFileParsed }: Props) {
   }
 
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
-    e.preventDefault();        // ← stops the browser from opening the file
+    e.preventDefault();
     setIsDragActive(false);
-    handleFile(e.dataTransfer.files?.[0]);   // the dropped file lives here
+    handleFile(e.dataTransfer.files?.[0]);
   }
 
   return (
@@ -70,7 +70,6 @@ export default function UploadStep({ onFileParsed }: Props) {
             : "hover:bg-chip"
         }`}
       >
-        {/* hidden real file input — opened when the box is clicked */}
         <input
           ref={inputRef}
           type="file"
@@ -79,7 +78,7 @@ export default function UploadStep({ onFileParsed }: Props) {
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
 
-        {/* icon (pointer-events-none so it never interferes with drag events) */}
+        {/* pointer-events-none on children keeps drag events on the container */}
         <div
           className={`pointer-events-none mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border border-line transition-transform duration-300 ${
             isDragActive ? "scale-110" : "group-hover:scale-105"

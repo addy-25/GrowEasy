@@ -4,21 +4,23 @@ import { CrmRecord } from "../types";
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL,   // route requests to AI Credits, not OpenAI
+  // Supports any OpenAI-compatible provider; unset = official OpenAI API.
+  baseURL: process.env.OPENAI_BASE_URL,
 });
 
 export async function callLlm(batch: Record<string, string>[]): Promise<CrmRecord[]> {
   const completion = await client.chat.completions.create({
-    model: "gpt-4o-mini",                       // cheap, smart enough for mapping
-    temperature: 0,                              // consistent, not creative
-    response_format: { type: "json_object" },    // forces valid JSON back
+    model: "gpt-4o-mini",
+    temperature: 0,
+    // json_object mode guarantees parseable JSON but always returns an
+    // object — hence the { "records": [...] } envelope in the prompt.
+    response_format: { type: "json_object" },
     messages: [
-      { role: "system", content: systemPrompt },              // the rules
-      { role: "user", content: JSON.stringify({ rows: batch }) }, // the data
+      { role: "system", content: systemPrompt },
+      { role: "user", content: JSON.stringify({ rows: batch }) },
     ],
   });
 
   const content = completion.choices[0]?.message?.content ?? "{}";
-  const parsed = JSON.parse(content);
-  return parsed.records ?? [];
+  return JSON.parse(content).records ?? [];
 }

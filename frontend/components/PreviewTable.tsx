@@ -6,14 +6,14 @@ interface Props {
   rows: Record<string, string>[];
 }
 
-const ROW_HEIGHT = 41;   // fixed px height per row — the windowing math depends on it
-const VIEWPORT = 420;    // height of the scroll box (matches max-h below)
-const OVERSCAN = 15;     // extra rows above/below the viewport to avoid blank flashes
+// Windowed rendering: only rows near the viewport exist in the DOM, with
+// spacer rows keeping the scrollbar length correct. The math relies on a
+// fixed row height.
+const ROW_HEIGHT = 41;
+const VIEWPORT = 420;
+const OVERSCAN = 15;
 
 export default function PreviewTable({ rows }: Props) {
-  // PERF: store the window START INDEX, not the raw scrollTop.
-  // scrollTop changes every pixel (60+ events/sec); the start index only
-  // changes once per ROW_HEIGHT px — so we re-render ~40x less often.
   const [start, setStart] = useState(0);
 
   if (rows.length === 0) {
@@ -29,22 +29,21 @@ export default function PreviewTable({ rows }: Props) {
   const padTop = start * ROW_HEIGHT;
   const padBottom = (rows.length - end) * ROW_HEIGHT;
 
+  // State updates only when the window start index changes,
+  // not on every scrolled pixel.
   function handleScroll(e: React.UIEvent<HTMLDivElement>) {
     const next = Math.max(
       0,
       Math.floor(e.currentTarget.scrollTop / ROW_HEIGHT) - OVERSCAN
     );
-    if (next !== start) setStart(next); // skip the re-render entirely if unchanged
+    if (next !== start) setStart(next);
   }
 
   return (
-    // PERF: solid background instead of .glass — backdrop-filter blur must
-    // recompute every frame under a scrolling surface. Glass stays on static
-    // cards; scroll containers get cheap opaque paint.
+    // Solid background — backdrop-filter on a scroll container repaints
+    // every frame while scrolling.
     <div className="rounded-2xl overflow-hidden bg-surface border border-line">
       <div className="max-h-[420px] overflow-auto" onScroll={handleScroll}>
-        {/* PERF: table-fixed = constant column widths, no re-measuring layout
-            every time the visible window shifts */}
         <table className="table-fixed text-sm text-left border-collapse">
           <thead className="sticky top-0 z-10 bg-surface-2">
             <tr>

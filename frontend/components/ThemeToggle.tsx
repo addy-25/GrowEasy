@@ -5,8 +5,7 @@ import { useEffect, useState } from "react";
 export default function ThemeToggle() {
   const [light, setLight] = useState(false);
 
-  // Read the class the inline <script> in layout.tsx already applied,
-  // so the button state matches reality after hydration.
+  // Sync with the class applied pre-paint by the inline script in layout.tsx.
   useEffect(() => {
     setLight(document.documentElement.classList.contains("light"));
   }, []);
