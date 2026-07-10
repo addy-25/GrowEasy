@@ -15,10 +15,12 @@ RULES:
 - crm_status must be one of: ${CRM_STATUS.join(", ")}. If unclear, leave "".
 - data_source must be one of: ${DATA_SOURCE.join(", ")}. If none matches
   confidently, leave "".
-- created_at must be parseable by JS new Date(). Convert any date format to ISO.
-  If the date is invalid or impossible (day > 31, month > 12, nonsense values),
-  output an empty string "". NEVER invent or guess a plausible-looking date
-  when the source value is broken.
+- created_at must be parseable by JS new Date(). Convert any valid date to ISO
+  8601, e.g. "2026-05-13 14:20:48" -> "2026-05-13T14:20:48".
+  You MUST preserve valid dates — never blank a date that can be understood.
+  ONLY output an empty string "" when the date is truly impossible
+  (day > 31, month > 12, or nonsense text). Never invent a date that
+  is not in the source.
 - If a row has multiple emails: use the first, append the rest into crm_note.
 - created_at must be parseable by JS new Date(). Convert any date format to ISO.
 - If a row has multiple phone numbers: use the first, and you MUST actively

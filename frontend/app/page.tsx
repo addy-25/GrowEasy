@@ -4,6 +4,8 @@ import { useState } from "react";
 import UploadStep from "@/components/UploadStep";
 import PreviewTable from "@/components/PreviewTable";
 import { Step, ImportResult } from "@/lib/types";
+import ResultView from "@/components/ResultView";
+
 
 export default function Home() {
   const [step, setStep] = useState<Step>("upload");
@@ -113,19 +115,9 @@ export default function Home() {
           </div>
         )}
 
-        {/* STEP result — temporary summary; full result tables come next */}
+        
         {step === "result" && result && (
-          <div className="glass rounded-2xl p-8 text-center animate-fade-in-up">
-            <p className="text-lg mb-2">
-              ✅ Imported <b>{result.totalImported}</b> · skipped <b>{result.totalSkipped}</b>
-            </p>
-            <button
-              onClick={reset}
-              className="mt-4 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition"
-            >
-              Import another
-            </button>
-          </div>
+          <ResultView result={result} onReset={reset} />
         )}
       </div>
     </main>
