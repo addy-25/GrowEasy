@@ -12,6 +12,11 @@ app.use(cors());                        // let the frontend call this server
 // keep the uploaded file in memory instead of saving to disk
 const upload = multer({ storage: multer.memoryStorage() });
 
+// health check — used by deploy platforms and uptime monitors
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok" });
+});
+
 app.post("/api/import", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
