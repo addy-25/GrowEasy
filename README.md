@@ -2,7 +2,7 @@
 
 Upload **any** leads CSV — Facebook exports, Google Ads exports, hand-made spreadsheets, CRM dumps with arbitrary column names — and get back clean, structured records in the GrowEasy CRM format. An LLM handles the fuzzy column mapping; deterministic code enforces every hard rule.
 
-**Live demo:** `<frontend-url>` &nbsp;·&nbsp; **API:** `<backend-url>`
+**Live demo:** [grow-easy-gamma.vercel.app](https://grow-easy-gamma.vercel.app) &nbsp;·&nbsp; **API:** [groweasy-backend-6dr4.onrender.com](https://groweasy-backend-6dr4.onrender.com/health)
 
 ---
 
