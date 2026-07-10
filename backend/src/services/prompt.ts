@@ -22,7 +22,6 @@ RULES:
   (day > 31, month > 12, or nonsense text). Never invent a date that
   is not in the source.
 - If a row has multiple emails: use the first, append the rest into crm_note.
-- created_at must be parseable by JS new Date(). Convert any date format to ISO.
 - If a row has multiple phone numbers: use the first, and you MUST actively
   search the entire row for every additional number and include ALL of them
   in crm_note. Never silently drop a number. Example:

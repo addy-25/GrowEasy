@@ -1,21 +1,85 @@
 @import "tailwindcss";
 
+/* ---------- theme tokens ----------
+   Every color in the app comes from these variables. The dark set is the
+   default; adding .light on <html> swaps the whole palette at once. */
 :root {
-  --foreground: #ededed;
+  /* text emphasis levels */
+  --ink-hi: rgba(255, 255, 255, 0.92);
+  --ink-mid: rgba(255, 255, 255, 0.7);
+  --ink-dim: rgba(255, 255, 255, 0.5);
+  --ink-faint: rgba(255, 255, 255, 0.36);
+  /* borders */
+  --line: rgba(255, 255, 255, 0.12);
+  --line-soft: rgba(255, 255, 255, 0.06);
+  /* subtle button/pill backgrounds */
+  --chip: rgba(255, 255, 255, 0.1);
+  --chip-strong: rgba(255, 255, 255, 0.2);
+  /* solid surfaces (scroll containers — no blur there, for perf) */
+  --surface: #131022;
+  --surface-2: #1a1630;
+  /* frosted glass */
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-line: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+  /* heading gradient stops */
+  --grad-a: #a5b4fc;
+  --grad-b: #d8b4fe;
+  --grad-c: #7dd3fc;
+  /* animated body background */
+  --bg-1: #0a0a14;
+  --bg-2: #12102a;
+  --bg-3: #0d1a2e;
+  --bg-4: #1a0f26;
+  --glow-opacity: 0.45;
 }
 
+html.light {
+  --ink-hi: #0f172a;
+  --ink-mid: #334155;
+  --ink-dim: #64748b;
+  --ink-faint: #94a3b8;
+  --line: rgba(15, 23, 42, 0.14);
+  --line-soft: rgba(15, 23, 42, 0.07);
+  --chip: rgba(15, 23, 42, 0.06);
+  --chip-strong: rgba(15, 23, 42, 0.13);
+  --surface: #ffffff;
+  --surface-2: #eef2f7;
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-line: rgba(15, 23, 42, 0.1);
+  --glass-shadow: 0 8px 32px rgba(51, 65, 85, 0.15);
+  --grad-a: #4f46e5;
+  --grad-b: #9333ea;
+  --grad-c: #0284c7;
+  --bg-1: #eef2ff;
+  --bg-2: #fdf4ff;
+  --bg-3: #ecfeff;
+  --bg-4: #eff6ff;
+  --glow-opacity: 0.3;
+}
+
+/* Expose tokens as Tailwind utilities: text-ink-hi, border-line, bg-surface… */
 @theme inline {
-  --color-foreground: var(--foreground);
+  --color-ink-hi: var(--ink-hi);
+  --color-ink-mid: var(--ink-mid);
+  --color-ink-dim: var(--ink-dim);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-chip: var(--chip);
+  --color-chip-strong: var(--chip-strong);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  color: var(--foreground);
+  color: var(--ink-hi);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   min-height: 100vh;
-  /* slowly shifting dark gradient */
-  background: linear-gradient(-45deg, #0a0a14, #12102a, #0d1a2e, #1a0f26);
+  /* slowly shifting gradient */
+  background: linear-gradient(-45deg, var(--bg-1), var(--bg-2), var(--bg-3), var(--bg-4));
   background-size: 400% 400%;
   animation: gradientShift 20s ease infinite;
   overflow-x: hidden;
@@ -30,7 +94,7 @@ body::after {
   height: 40rem;
   border-radius: 9999px;
   filter: blur(90px);
-  opacity: 0.45;
+  opacity: var(--glow-opacity);
   z-index: -1;
   pointer-events: none;
   animation: float 14s ease-in-out infinite;
@@ -47,21 +111,50 @@ body::after {
   animation-delay: -7s;
 }
 
-/* the frosted-glass surface — reuse this class on any card */
+/* frosted-glass surface — for STATIC cards only (never scroll containers) */
 .glass {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--glass-shadow);
 }
 
 /* gradient heading text */
 .gradient-text {
-  background: linear-gradient(90deg, #a5b4fc, #d8b4fe, #7dd3fc);
+  background: linear-gradient(90deg, var(--grad-a), var(--grad-b), var(--grad-c));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* ---------- theme-aware status badges ---------- */
+.badge-good { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.3); }
+.badge-warn { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border-color: rgba(245, 158, 11, 0.3); }
+.badge-bad  { background: rgba(244, 63, 94, 0.15);  color: #fda4af; border-color: rgba(244, 63, 94, 0.3); }
+.badge-info { background: rgba(14, 165, 233, 0.15); color: #7dd3fc; border-color: rgba(14, 165, 233, 0.3); }
+html.light .badge-good { color: #047857; }
+html.light .badge-warn { color: #b45309; }
+html.light .badge-bad  { color: #be123c; }
+html.light .badge-info { color: #0369a1; }
+
+/* stat-card accent numbers */
+.accent-good { color: #6ee7b7; }
+.accent-warn { color: #fcd34d; }
+.accent-neutral { color: var(--ink-hi); }
+html.light .accent-good { color: #059669; }
+html.light .accent-warn { color: #d97706; }
+
+/* error message box */
+.alert-error {
+  background: rgba(244, 63, 94, 0.1);
+  color: #fda4af;
+  border: 1px solid rgba(244, 63, 94, 0.2);
+}
+html.light .alert-error {
+  background: rgba(244, 63, 94, 0.07);
+  color: #be123c;
+  border-color: rgba(244, 63, 94, 0.25);
 }
 
 @keyframes gradientShift {

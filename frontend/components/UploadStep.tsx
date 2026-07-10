@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Papa from "papaparse";
+import { PREVIEW_LIMIT } from "@/lib/types";
 
 interface Props {
   onFileParsed: (file: File, rows: Record<string, string>[]) => void;
@@ -22,10 +23,19 @@ export default function UploadStep({ onFileParsed }: Props) {
     }
     setLocalError(null);
 
+    // Incremental parsing: `step` streams the file ROW BY ROW instead of
+    // loading it all into memory. We stop once we have enough rows for the
+    // preview — a 100MB CSV costs the same as a 1KB one here. The backend
+    // still receives the full original file on Confirm.
+    const rows: Record<string, string>[] = [];
     Papa.parse<Record<string, string>>(file, {
       header: true,
       skipEmptyLines: true,
-      complete: (results) => onFileParsed(file, results.data),
+      step: (result, parser) => {
+        rows.push(result.data);
+        if (rows.length >= PREVIEW_LIMIT) parser.abort(); // enough for preview
+      },
+      complete: () => onFileParsed(file, rows), // fires after finish OR abort
       error: () => setLocalError("Could not read that file. Is it a valid CSV?"),
     });
   }
@@ -56,8 +66,8 @@ export default function UploadStep({ onFileParsed }: Props) {
         onDrop={handleDrop}
         className={`glass rounded-2xl p-12 sm:p-16 text-center cursor-pointer group transition-all duration-300 ${
           isDragActive
-            ? "ring-2 ring-indigo-400 scale-[1.02] bg-white/10"
-            : "hover:bg-white/[0.08]"
+            ? "ring-2 ring-indigo-400 scale-[1.02] bg-chip"
+            : "hover:bg-chip"
         }`}
       >
         {/* hidden real file input — opened when the box is clicked */}
@@ -71,12 +81,12 @@ export default function UploadStep({ onFileParsed }: Props) {
 
         {/* icon (pointer-events-none so it never interferes with drag events) */}
         <div
-          className={`pointer-events-none mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 transition-transform duration-300 ${
+          className={`pointer-events-none mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border border-line transition-transform duration-300 ${
             isDragActive ? "scale-110" : "group-hover:scale-105"
           }`}
           style={{
             background:
-              "linear-gradient(135deg, rgba(99,102,241,0.35), rgba(168,85,247,0.35))",
+              "linear-gradient(135deg, rgba(99,102,241,0.45), rgba(168,85,247,0.45))",
           }}
         >
           <svg
@@ -85,7 +95,7 @@ export default function UploadStep({ onFileParsed }: Props) {
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="h-9 w-9 text-indigo-100"
+            className="h-9 w-9 text-white"
           >
             <path
               strokeLinecap="round"
@@ -98,16 +108,16 @@ export default function UploadStep({ onFileParsed }: Props) {
         <p className="pointer-events-none text-xl font-semibold">
           {isDragActive ? "Drop it here" : "Drag & drop your CSV"}
         </p>
-        <p className="pointer-events-none mt-2 text-sm text-white/50">
+        <p className="pointer-events-none mt-2 text-sm text-ink-dim">
           or click to browse your files
         </p>
-        <p className="pointer-events-none mt-4 inline-block rounded-full bg-white/5 px-3 py-1 text-xs text-white/40 border border-white/10">
+        <p className="pointer-events-none mt-4 inline-block rounded-full bg-chip px-3 py-1 text-xs text-ink-faint border border-line">
           .csv files only
         </p>
       </div>
 
       {localError && (
-        <p className="mt-4 text-center text-sm text-rose-200 bg-rose-500/10 border border-rose-500/20 rounded-xl py-2 px-4 animate-fade-in-up">
+        <p className="mt-4 text-center text-sm alert-error rounded-xl py-2 px-4 animate-fade-in-up">
           {localError}
         </p>
       )}

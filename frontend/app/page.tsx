@@ -3,9 +3,8 @@
 import { useState } from "react";
 import UploadStep from "@/components/UploadStep";
 import PreviewTable from "@/components/PreviewTable";
-import { Step, ImportResult } from "@/lib/types";
 import ResultView from "@/components/ResultView";
-
+import { Step, ImportResult, PREVIEW_LIMIT } from "@/lib/types";
 
 export default function Home() {
   const [step, setStep] = useState<Step>("upload");
@@ -63,7 +62,7 @@ export default function Home() {
         <h1 className="text-4xl sm:text-5xl font-bold gradient-text">
           GrowEasy CSV Importer
         </h1>
-        <p className="mt-3 text-white/60 max-w-xl mx-auto">
+        <p className="mt-3 text-ink-mid max-w-xl mx-auto">
           Upload any messy leads CSV — our AI maps it into clean CRM records.
         </p>
       </header>
@@ -76,13 +75,16 @@ export default function Home() {
         {step === "preview" && (
           <div className="animate-fade-in-up space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-3">
-              <p className="text-white/70">
+              <p className="text-ink-mid">
                 Previewing <b>{rows.length}</b> rows from <b>{file?.name}</b>
+                {rows.length >= PREVIEW_LIMIT && (
+                  <span className="text-ink-faint"> (first {PREVIEW_LIMIT.toLocaleString()} shown — the full file is still imported)</span>
+                )}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={reset}
-                  className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition"
+                  className="px-5 py-2.5 rounded-xl bg-chip hover:bg-chip-strong border border-line transition"
                 >
                   Start over
                 </button>
@@ -97,7 +99,7 @@ export default function Home() {
             </div>
 
             {error && (
-              <p className="text-sm text-rose-200 bg-rose-500/10 border border-rose-500/20 rounded-xl py-2 px-4">
+              <p className="text-sm alert-error rounded-xl py-2 px-4">
                 {error}
               </p>
             )}
@@ -109,13 +111,13 @@ export default function Home() {
         {/* STEP loading */}
         {step === "loading" && (
           <div className="glass rounded-2xl p-16 text-center animate-fade-in-up">
-            <div className="mx-auto mb-5 h-12 w-12 rounded-full border-4 border-white/20 border-t-indigo-400 animate-spin" />
+            <div className="mx-auto mb-5 h-12 w-12 rounded-full border-4 border-line border-t-indigo-400 animate-spin" />
             <p className="text-lg font-medium">Processing with AI…</p>
-            <p className="text-sm text-white/50 mt-1">Mapping your columns into CRM fields</p>
+            <p className="text-sm text-ink-dim mt-1">Mapping your columns into CRM fields</p>
           </div>
         )}
 
-        
+        {/* STEP 4 — results */}
         {step === "result" && result && (
           <ResultView result={result} onReset={reset} />
         )}

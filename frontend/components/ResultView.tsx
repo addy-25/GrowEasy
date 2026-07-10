@@ -27,17 +27,17 @@ const COLUMNS: { key: keyof CrmRecord; label: string }[] = [
   { key: "description", label: "Description" },
 ];
 
-// Color-coded badge per CRM status so results are scannable at a glance.
+// Theme-aware badge classes (defined in globals.css) per CRM status.
 const STATUS_STYLES: Record<string, string> = {
-  GOOD_LEAD_FOLLOW_UP: "bg-emerald-500/15 text-emerald-200 border-emerald-500/30",
-  DID_NOT_CONNECT: "bg-amber-500/15 text-amber-200 border-amber-500/30",
-  BAD_LEAD: "bg-rose-500/15 text-rose-200 border-rose-500/30",
-  SALE_DONE: "bg-sky-500/15 text-sky-200 border-sky-500/30",
+  GOOD_LEAD_FOLLOW_UP: "badge-good",
+  DID_NOT_CONNECT: "badge-warn",
+  BAD_LEAD: "badge-bad",
+  SALE_DONE: "badge-info",
 };
 
 function StatusBadge({ status }: { status: string }) {
-  if (!status) return <span className="text-white/30">—</span>;
-  const style = STATUS_STYLES[status] ?? "bg-white/10 text-white/70 border-white/20";
+  if (!status) return <span className="text-ink-faint">—</span>;
+  const style = STATUS_STYLES[status] ?? "bg-chip text-ink-mid border-line";
   return (
     <span className={`inline-block rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap ${style}`}>
       {status}
@@ -48,18 +48,19 @@ function StatusBadge({ status }: { status: string }) {
 // One reusable table — used for BOTH imported and skipped records.
 function CrmTable({ records }: { records: CrmRecord[] }) {
   if (records.length === 0) {
-    return <p className="text-white/50 text-sm py-4 text-center">No records.</p>;
+    return <p className="text-ink-dim text-sm py-4 text-center">No records.</p>;
   }
   return (
-    <div className="glass rounded-2xl overflow-hidden">
+    // solid surface, not .glass — this is a scroll container (see PreviewTable)
+    <div className="rounded-2xl overflow-hidden bg-surface border border-line">
       <div className="max-h-[420px] overflow-auto">
         <table className="w-full text-sm text-left border-collapse">
-          <thead className="sticky top-0 z-10 bg-[#141024]/90 backdrop-blur-md">
+          <thead className="sticky top-0 z-10 bg-surface-2">
             <tr>
               {COLUMNS.map((c) => (
                 <th
                   key={c.key}
-                  className="px-4 py-3 font-semibold whitespace-nowrap text-white/90 border-b border-white/10"
+                  className="px-4 py-3 font-semibold whitespace-nowrap text-ink-hi border-b border-line"
                 >
                   {c.label}
                 </th>
@@ -68,17 +69,17 @@ function CrmTable({ records }: { records: CrmRecord[] }) {
           </thead>
           <tbody>
             {records.map((r, i) => (
-              <tr key={i} className="hover:bg-white/5 transition-colors">
+              <tr key={i} className="hover:bg-line-soft">
                 {COLUMNS.map((c) => (
                   <td
                     key={c.key}
                     title={r[c.key]}
-                    className="px-4 py-2.5 whitespace-nowrap text-white/70 border-b border-white/5 max-w-[220px] truncate"
+                    className="px-4 py-2.5 whitespace-nowrap text-ink-mid border-b border-line-soft max-w-[220px] truncate"
                   >
                     {c.key === "crm_status" ? (
                       <StatusBadge status={r.crm_status} />
                     ) : (
-                      r[c.key] || <span className="text-white/30">—</span>
+                      r[c.key] || <span className="text-ink-faint">—</span>
                     )}
                   </td>
                 ))}
@@ -94,7 +95,7 @@ function CrmTable({ records }: { records: CrmRecord[] }) {
 function StatCard({ label, value, accent }: { label: string; value: number; accent: string }) {
   return (
     <div className="glass rounded-2xl px-6 py-5 flex-1 min-w-[140px]">
-      <p className="text-sm text-white/50">{label}</p>
+      <p className="text-sm text-ink-dim">{label}</p>
       <p className={`text-3xl font-bold mt-1 ${accent}`}>{value}</p>
     </div>
   );
@@ -120,12 +121,12 @@ export default function ResultView({ result, onReset }: Props) {
     <div className="animate-fade-in-up space-y-6">
       {/* the totals the PDF requires, as stat cards */}
       <div className="flex flex-wrap gap-4">
-        <StatCard label="Total imported" value={result.totalImported} accent="text-emerald-300" />
-        <StatCard label="Total skipped" value={result.totalSkipped} accent="text-amber-300" />
+        <StatCard label="Total imported" value={result.totalImported} accent="accent-good" />
+        <StatCard label="Total skipped" value={result.totalSkipped} accent="accent-warn" />
         <StatCard
           label="Total processed"
           value={result.totalImported + result.totalSkipped}
-          accent="text-white"
+          accent="accent-neutral"
         />
       </div>
 
@@ -142,7 +143,7 @@ export default function ResultView({ result, onReset }: Props) {
         <div>
           <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-amber-400" /> Skipped records
-            <span className="text-sm font-normal text-white/40">(no email or mobile)</span>
+            <span className="text-sm font-normal text-ink-faint">(no email or mobile)</span>
           </h2>
           <CrmTable records={result.skipped} />
         </div>
@@ -158,7 +159,7 @@ export default function ResultView({ result, onReset }: Props) {
         </button>
         <button
           onClick={onReset}
-          className="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition"
+          className="px-6 py-2.5 rounded-xl bg-chip hover:bg-chip-strong border border-line transition"
         >
           Import another file
         </button>

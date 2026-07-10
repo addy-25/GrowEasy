@@ -27,3 +27,7 @@ export interface ImportResult {
 
 // The four screens the app can show.
 export type Step = "upload" | "preview" | "loading" | "result";
+
+// Max rows parsed client-side for the preview (incremental parsing cap).
+// The full file is still sent to the backend on Confirm.
+export const PREVIEW_LIMIT = 1000;
