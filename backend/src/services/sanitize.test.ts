@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { sanitizeRecord } from "./sanitize";
 import { CrmRecord } from "../types";
 
-// Helper: a fully-blank record we can override per test.
 function record(overrides: Partial<CrmRecord> = {}): CrmRecord {
   return {
     created_at: "",
